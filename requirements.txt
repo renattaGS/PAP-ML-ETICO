@@ -1,14 +1,15 @@
 
 # -- --------------------------------------------------------------------------------------------------- -- #
-# -- project: A SHORT DESCRIPTION OF THE PROJECT                                                         -- #
+# -- project: Ethical Machine Learning applied to  data from Techo.org                                   -- #
 # -- script: requirements.txt : text file with the required libraries for the project                    -- #
-# -- author: YOUR GITHUB USER NAME                                                                       -- #
+# -- author: renattaGS                                                                                   -- #
 # -- license: GPL-3.0 License                                                                            -- #
-# -- repository: YOUR REPOSITORY URL                                                                     -- #
+# -- repository: https://github.com/renattaGS/PAP-ML-ETICO                                               -- #
 # -- --------------------------------------------------------------------------------------------------- -- #
 
 pandas>=1.1.0
+pandas-profiling>=2.11.0
 numpy>=1.19.1
 jupyter>=1.0.0
-chart_studio>=1.1
-plotly>=4.14
+statsmodels>=0.11.1
+
