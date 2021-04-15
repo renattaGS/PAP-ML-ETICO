@@ -39,6 +39,6 @@ visualizations.plot_histogram_discrete(data_techo['p74'].to_numpy(), 'p74', 'Fre
 data.reporte_profiling(data_techo, 'Reporte_Datos_Techo.html')
 
 # Partición de datos
-cols_strat = ['p13', 'p15', 'p17', 'p32', 'p33', 'p42', 'p44', 'p45', 'p47', 'p71']
+cols_strat = ['p13']
 X_train, X_test, y_train, y_test = functions.train_test_split_strat(data_techo,
                                                                     0.20, cols_strat)
