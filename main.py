@@ -1,48 +1,44 @@
-
 """
 # -- --------------------------------------------------------------------------------------------------- -- #
-# -- project: A SHORT DESCRIPTION OF THE PROJECT                                                         -- #
+# -- project: Ethical Machine Learning applied to  data from Techo.org                                   -- #
 # -- script: main.py : python script with the main functionality                                         -- #
-# -- author: YOUR GITHUB USER NAME                                                                       -- #
+# -- author: renattaGS                                                                                   -- #
 # -- license: GPL-3.0 License                                                                            -- #
-# -- repository: YOUR REPOSITORY URL                                                                     -- #
+# -- repository: https://github.com/renattaGS/PAP-ML-ETICO                                               -- #
 # -- --------------------------------------------------------------------------------------------------- -- #
 """
+import data
+import functions
+import visualizations
 
-import pandas as pd
-import data as dt
+# data import
+file_path = 'files/Datos_Techo_converted.xlsx'
 
-# -- TEST 1 : 
-# verify that the script is being read
-print(dt.dict_test)
+data_techo = data.lectura_datos(file_path, 'Datos Techo', 'p1')
 
-# -- TEST 2 :
-# verify that installed pandas module works correctly
-df_dict_test = pd.DataFrame(dt.dict_test, index=[0, 1])
-print(df_dict_test)
+missing_tot = (data_techo.isnull().sum()).sum()
+missing = (data_techo.isnull().sum())['p74']
 
-# -- TEST 3 :
-# verify you can use plotly and visualize plots in jupyter notebook
+print('Existen un total de ', missing_tot, ' valores faltantes en el Data frame \n')
+print('Existen un total de ', missing, 'valores faltnates en la columna p74')
 
-import chart_studio.plotly as py   # various tools (jupyter offline print)
-import plotly.graph_objects as go  # plotting engine
+# visualizaciónde p74
+ne_data = data_techo[data_techo['p74'].notnull()]['p74'].to_numpy()
+visualizations.plot_histogram_discrete(ne_data, 'p74', 'Frecuencia',
+                                       'Histograma de datos no faltantes en p74')
+# Datos faltantes
 
-# example data
-df = pd.DataFrame({'column_a': [1, 2, 3, 4, 5], 'column_b': [1, 2, 3, 4, 5]})
-# basic plotly plot
-data = [go.Bar(x=df['column_a'], y=df['column_b'])]
-# instruction to view it inside jupyter
-py.iplot(data, filename='jupyter-basic_bar')
-# (alternatively) instruction to view it in web app of plotly
-# py.plot(data)
+data_techo = functions.fill_empty(data_techo, 'p74', 'p3', 'p27')
+missing_tot = (data_techo.isnull().sum()).sum()
+print('Existen un total de ', missing_tot, ' valores faltantes en el Data frame')
 
-# -- TEST 4 :
-# verify you can use plotly and visualize plots in web browser locally
+visualizations.plot_histogram_discrete(data_techo['p74'].to_numpy(), 'p74', 'Frecuencia',
+                                       'Histograma de p74')
 
-import plotly.io as pio            # to define input-output of plots
-pio.renderers.default = "browser"  # to render the plot locally in your default web browser
+# Reporte de datos
+data.reporte_profiling(data_techo, 'Reporte_Datos_Techo.html')
 
-# basic plotly plot
-plot_data = go.Figure(go.Bar(x=df['column_a'], y=df['column_b']))
-# instruction to view it in specified render (in this case browser)
-plot_data.show()
+# Partición de datos
+cols_strat = ['p13', 'p15', 'p17', 'p32', 'p33', 'p42', 'p44', 'p45', 'p47', 'p71']
+X_train, X_test, y_train, y_test = functions.train_test_split_strat(data_techo,
+                                                                    0.20, cols_strat)
