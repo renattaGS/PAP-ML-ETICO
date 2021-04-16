@@ -84,9 +84,110 @@ def fill_empty(df: pd.DataFrame, col_empty: str, col_criteria1: str, col_criteri
 def train_test_split_strat(data: pd.DataFrame, test_size: float,
                            strat_cols: list):
     col_drop = ['p1', 'p3', 'p4', 'p5', 'p6', 'p7', 'p131']
-    x = data.drop(col_drop, axis=1).to_numpy()
-    y = data['p131'].to_numpy()
-    strat_data = data[strat_cols].to_numpy()
+    x = data.drop(col_drop, axis=1)
+    y = data['p131']
+    strat_data = data[strat_cols]
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=test_size, shuffle=True,
                                                         stratify=strat_data)
     return X_train, X_test, y_train, y_test
+
+
+def standarizacion(x_train: np.array, x_test: np.array, feats: list) -> np.array:
+    mu_train, std_train = x_train[feats].mean(axis=0), x_train[feats].std(axis=0)
+    mu_test, std_test = x_test[feats].mean(axis=0), x_test[feats].std(axis=0)
+    z_train = (x_train[feats] - mu_train) / std_train
+    z_test = (x_test[feats] - mu_test) / std_test
+
+    return z_train, z_test
+
+
+def h(x, w):
+    # YOUR CODE
+    z_i = np.dot(x, w.T)
+    sigma = 1 / (1 + np.exp(-z_i))
+    return sigma
+
+
+def cost(x, y, w, lmbd):
+    # YOUR CODE
+    m = len(y)
+    j_w_1 = (1 - y) * np.log(1 - h(x, w))
+    j_w_2 = y * np.log(h(x, w))
+    j_w_3 = j_w_2 + j_w_1
+    j_w = -1 * np.average(j_w_3)
+    j_reg = (lmbd / (2 * m)) * np.dot(w, w.T).squeeze()
+    fin = j_w + j_reg
+    return fin
+
+
+def grad(x, y, w, lmbd):
+    # YOUR CODE
+    m = len(y)
+    d_j_w_1 = 1 / m
+    d_j_w_2 = np.dot(x.T, (h(x, w) - y))
+    d_j_w = (d_j_w_1 * d_j_w_2)
+    d_j_w_reg = np.sum((lmbd * w) / m)
+    fin = d_j_w + d_j_w_reg
+    return fin
+
+
+def gd(x, y, x_t, y_t, w, alpha, lmbd, epochs):
+    # YOUR CODE
+    J = []  # loss function with training set
+    J_t = []  # loss function with test set
+    for i in range(epochs):
+        w_grad = grad(x, y, w, lmbd).T  # compute the gradinet
+        w = w - alpha * w_grad  # update weights
+        J.append(cost(x, y, w, lmbd))  # compute the cost for training
+        J_t.append(cost(x_t, y_t, w, lmbd))  # compute the cost for testing
+    return w, J, J_t
+
+
+def predict(p, thr):
+    """
+    p: is the probability (hypothesis)
+    thr: is the threshold
+    return: 0 or 1 for each instance
+    """
+    indx = p > thr
+    p[indx] = 1
+    p[~indx] = 0
+    return p.astype(int)
+
+
+def get_values(y, y_hat):
+    """
+    y: the true values
+    y_hat: the predicted values
+    return: A dictionary
+    """
+    V = {}
+    V['tp'] = sum(y[y_hat == 1] == 1)
+    V['fn'] = sum(y[y_hat == 0] == 1)
+    V['fp'] = sum(y[y_hat == 1] == 0)
+    V['tn'] = sum(y[y_hat == 0] == 0)
+    return V
+
+
+def sensitivity(V):
+    return V['tp'] / (V['tp'] + V['fn'])
+
+
+def specificity(V):
+    return V['tn'] / (V['tn'] + V['fp'])
+
+
+def ROC(y, p_roc):
+    """
+    Compute sensitivity and specificity for each threshold in [0, 1]
+    return: Se, Sp
+    """
+    thrs = np.arange(0, 1, 0.05)
+    Se = np.zeros((len(thrs)))
+    Sp = np.zeros((len(thrs)))
+    for idx, thr in enumerate(thrs):
+        y_hat = predict(p_roc.copy(), thr)
+        V = get_values(y.reshape(-1), y_hat)
+        Se[idx] = sensitivity(V)
+        Sp[idx] = specificity(V)
+    return Se, Sp
