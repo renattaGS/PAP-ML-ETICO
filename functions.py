@@ -30,7 +30,7 @@ def kde_statsmodels_m(x: np.array, x_grid: np.array) -> np.array:
     return kde.pdf(x_grid)
 
 
-def acep_rechazo_simplificada_dis(N: int, Dom_f: tuple, f, max_f: float):
+def acep_rechazo_simplificada_dis(N: int, Dom_f: tuple, f, max_f: float) -> np.array:
     X = np.zeros(N)
     i = 0
     while i < N:
@@ -42,13 +42,14 @@ def acep_rechazo_simplificada_dis(N: int, Dom_f: tuple, f, max_f: float):
     return X
 
 
-def fill_empty(df: pd.DataFrame, col_empty: str, col_criteria1: str, col_criteria2: str) -> pd.DataFrame:
+def fill_empty(df: pd.DataFrame, col_empty: str, col_criteria1: str, col_criteria2: str):
     warnings.filterwarnings('ignore')
     unique_c1 = df[col_criteria1].unique().tolist()
     unique_c2 = df[col_criteria2].unique().tolist()
 
     not_empty = df[df[col_empty].notnull()]
     empty = df[df[col_empty].isnull()]
+    aux_df = pd.DataFrame(columns=df.columns)
 
     for i in unique_c1:
         for j in unique_c2:
@@ -74,15 +75,15 @@ def fill_empty(df: pd.DataFrame, col_empty: str, col_criteria1: str, col_criteri
                 pdf = kde_statsmodels_m(aux_ne, grid, )
                 gen_pdf = kde_statsmodels_func(aux_ne)
 
-                for k in idx_aux_e:
+                for k, l in zip(idx_aux_e, range(len(idx_aux_e))):
                     df.loc[k, col_empty] = acep_rechazo_simplificada_dis(1, (min_empty, max_empty), gen_pdf, max(pdf))
-
+                    aux_df.loc[l, :] = df.loc[k, :]
     df.drop(df[df[col_empty].isnull()].index, inplace=True)
-    return df
+    return df, aux_df
 
 
 def train_test_split_strat(data: pd.DataFrame, test_size: float,
-                           strat_cols: list):
+                           strat_cols: list) -> np.array:
     col_drop = ['p1', 'p3', 'p4', 'p5', 'p6', 'p7', 'p131']
     x = data.drop(col_drop, axis=1)
     y = data['p131']
@@ -101,15 +102,14 @@ def standarizacion(x_train: np.array, x_test: np.array, feats: list) -> np.array
     return z_train, z_test
 
 
-def h(x, w):
-    # YOUR CODE
+def h(x: np.array, w: np.array) -> np.array:
+    """Sigmoide function"""
     z_i = np.dot(x, w.T)
     sigma = 1 / (1 + np.exp(-z_i))
     return sigma
 
 
-def cost(x, y, w, lmbd):
-    # YOUR CODE
+def cost(x: np.array, y: np.array, w: np.array, lmbd: float) -> np.array:
     m = len(y)
     j_w_1 = (1 - y) * np.log(1 - h(x, w))
     j_w_2 = y * np.log(h(x, w))
@@ -120,8 +120,7 @@ def cost(x, y, w, lmbd):
     return fin
 
 
-def grad(x, y, w, lmbd):
-    # YOUR CODE
+def grad(x: np.array, y: np.array, w: np.array, lmbd: float) -> np.array:
     m = len(y)
     d_j_w_1 = 1 / m
     d_j_w_2 = np.dot(x.T, (h(x, w) - y))
@@ -131,8 +130,8 @@ def grad(x, y, w, lmbd):
     return fin
 
 
-def gd(x, y, x_t, y_t, w, alpha, lmbd, epochs):
-    # YOUR CODE
+def gd(x: np.array, y: np.array, x_t: np.array, y_t: np.array,
+       w: np.array, alpha: float, lmbd: float, epochs: int):
     J = []  # loss function with training set
     J_t = []  # loss function with test set
     for i in range(epochs):
@@ -143,7 +142,7 @@ def gd(x, y, x_t, y_t, w, alpha, lmbd, epochs):
     return w, J, J_t
 
 
-def predict(p, thr):
+def predict(p: np.array, thr: float) -> np.array:
     """
     p: is the probability (hypothesis)
     thr: is the threshold
@@ -155,7 +154,7 @@ def predict(p, thr):
     return p.astype(int)
 
 
-def get_values(y, y_hat):
+def get_values(y: np.array, y_hat: np.array) -> dict:
     """
     y: the true values
     y_hat: the predicted values
@@ -169,15 +168,15 @@ def get_values(y, y_hat):
     return V
 
 
-def sensitivity(V):
+def sensitivity(V: dict) -> float:
     return V['tp'] / (V['tp'] + V['fn'])
 
 
-def specificity(V):
+def specificity(V: dict) -> float:
     return V['tn'] / (V['tn'] + V['fp'])
 
 
-def ROC(y, p_roc):
+def ROC(y: np.array, p_roc: np.array):
     """
     Compute sensitivity and specificity for each threshold in [0, 1]
     return: Se, Sp
@@ -191,3 +190,23 @@ def ROC(y, p_roc):
         Se[idx] = sensitivity(V)
         Sp[idx] = specificity(V)
     return Se, Sp
+
+
+def grid_search_lr(X_train, y_train, x_test, y_test, w, epochs):
+    grid = np.arange(0.001, 1, 0.001)
+    opt_j = 1
+    opt_jt = 1
+    opt_lmbd = 0
+    opt_alpha = 0
+    for lmbd in grid:
+        for alpha in grid:
+            w, J, J_t = gd(X_train, y_train, x_test, y_test, w, alpha, lmbd, epochs)
+            if (np.mean(J) < opt_j) & (np.mean(J_t) < opt_jt):
+                opt_j = np.mean(J)
+                opt_jt = np.mean(J_t)
+                opt_lmbd = lmbd
+                opt_alpha = alpha
+    return opt_lmbd, opt_alpha
+
+
+
