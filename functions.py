@@ -176,6 +176,10 @@ def specificity(V: dict) -> float:
     return V['tn'] / (V['tn'] + V['fp'])
 
 
+def accuracy(V: dict) -> float:
+    return (V['tp'] + V['tn']) / (V['tp'] + V['tn'] + V['fp'] + V['fn'])
+
+
 def ROC(y: np.array, p_roc: np.array):
     """
     Compute sensitivity and specificity for each threshold in [0, 1]
@@ -207,6 +211,3 @@ def grid_search_lr(X_train, y_train, x_test, y_test, w, epochs):
                 opt_lmbd = lmbd
                 opt_alpha = alpha
     return opt_lmbd, opt_alpha
-
-
-
