@@ -88,7 +88,8 @@ def train_test_split_strat(data: pd.DataFrame, test_size: float,
     x = data.drop(col_drop, axis=1)
     y = data['p131']
     strat_data = data[strat_cols]
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=test_size, shuffle=True,
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=143,
+                                                        shuffle=True,
                                                         stratify=strat_data)
     return X_train, X_test, y_train, y_test
 
