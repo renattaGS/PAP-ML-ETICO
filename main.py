@@ -14,7 +14,7 @@ import data
 import functions as fn
 import visualizations as vs
 from functions import train_test_split_strat as ttss
-
+pd.options.mode.chained_assignment = None
 # ----------------------------- data import --------------------------------------------------------
 file_path = 'files/Datos_Techo_converted.xlsx'
 file_path_l = 'files/Data_techo_llenado.csv'
@@ -239,13 +239,24 @@ V_cp44 = fn.get_values(y_cp44.reshape(-1), y_hatc44)
 V_cp45 = fn.get_values(y_cp45.reshape(-1), y_hatc45)
 V_cp71 = fn.get_values(y_cp71.reshape(-1), y_hatc71)
 
-medidas_cohortes = pd.DataFrame(columns=['Precisión', 'Sensibilidad', 'Especificidad'],
+
+medidas_cohortes = pd.DataFrame(columns=['Precisión', 'Cambio % pr', 'Sensibilidad', 'Cambio % se',
+                                         'Especificidad', 'Cambio % es',],
                                 index=['p13', 'p17', 'p44', 'p45', 'p71'])
 
 medidas_cohortes['Precisión'] = [fn.accuracy(i) for i in [V_cp13, V_cp17, V_cp44, V_cp45, V_cp17]]
+medidas_cohortes['Cambio % pr'] = (medidas_cohortes['Precisión'] -
+                                  medidas_d.loc['Llenados', 'Precisión'])/\
+                                 medidas_d.loc['Llenados', 'Precisión']
 medidas_cohortes['Sensibilidad'] = [fn.sensitivity(i) for i in
                                     [V_cp13, V_cp17, V_cp44, V_cp45, V_cp17]]
+medidas_cohortes['Cambio % se'] = (medidas_cohortes['Sensibilidad'] -
+                                  medidas_d.loc['Llenados', 'Sensibilidad'])/\
+                                 medidas_d.loc['Llenados', 'Sensibilidad']
 medidas_cohortes['Especificidad'] = [fn.specificity(i) for i in
                                      [V_cp13, V_cp17, V_cp44, V_cp45, V_cp17]]
+medidas_cohortes['Cambio % es'] = (medidas_cohortes['Especificidad'] -
+                                  medidas_d.loc['Llenados', 'Especificidad'])/\
+                                 medidas_d.loc['Llenados', 'Especificidad']
 
 print(medidas_cohortes)
