@@ -239,7 +239,7 @@ V_cp44 = fn.get_values(y_cp44.reshape(-1), y_hatc44)
 V_cp45 = fn.get_values(y_cp45.reshape(-1), y_hatc45)
 V_cp71 = fn.get_values(y_cp71.reshape(-1), y_hatc71)
 
-
+ 
 medidas_cohortes = pd.DataFrame(columns=['Precisión', 'Cambio % pr', 'Sensibilidad', 'Cambio % se',
                                          'Especificidad', 'Cambio % es',],
                                 index=['p13', 'p17', 'p44', 'p45', 'p71'])

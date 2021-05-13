@@ -13,7 +13,7 @@ import pandas as pd
 file_path = 'files/Datos_Techo_converted.xlsx'
 data_techo_org = data.lectura_datos(file_path, 'Datos Techo', 'p1')
 data_techo_llenado = pd.read_csv('files/Data_techo_llenado.csv')
-data_techo_sllenado = pd.read_csv('files/Data_techo_llenado.csv')
+data_techo_sllenado = pd.read_csv('files/Data_techo_solollenado.csv')
 
 data_techo_org.drop(data_techo_org[data_techo_org['p74'].isnull()].index, inplace=True)
 
